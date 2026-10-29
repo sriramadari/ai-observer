@@ -1,6 +1,6 @@
 {
   "name": "ai-observer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A zero-dependency AI SDK middleware for Node.js: one unified client for OpenAI, Anthropic & Gemini with built-in retries, rate-limit handling, Redis response caching, request tracing, cost tracking, and prompt versioning.",
   "keywords": [
     "ai",
@@ -20,7 +20,9 @@
     "cost-tracking",
     "prompt-management",
     "retry",
-    "rate-limit"
+    "rate-limit",
+    "edge",
+    "browser"
   ],
   "license": "MIT",
   "author": "sriramadari",
@@ -57,7 +59,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",

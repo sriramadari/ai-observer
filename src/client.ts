@@ -65,6 +65,11 @@ const ENV_KEYS: Record<Provider, string> = {
   gemini: "GEMINI_API_KEY",
 };
 
+/** Read an env var without assuming `process` exists (browsers, edge runtimes). */
+function readEnv(name: string): string | undefined {
+  return typeof process !== "undefined" ? process.env?.[name] : undefined;
+}
+
 /** A configured client. Created via {@link createAI}. */
 export class AIClient {
   readonly provider: Provider;
@@ -86,7 +91,7 @@ export class AIClient {
     this.provider = options.provider;
     const adapter = getAdapter(options.provider);
     this.model = options.model ?? adapter.defaultModel;
-    this.apiKey = options.apiKey ?? process.env[ENV_KEYS[options.provider]] ?? "";
+    this.apiKey = options.apiKey ?? readEnv(ENV_KEYS[options.provider]) ?? "";
     this.maxTokens = options.maxTokens ?? 1024;
     this.cache = normalizeCache(options.cache);
     this.cacheTtl = options.cacheTtlSeconds ?? 3600;
@@ -97,7 +102,7 @@ export class AIClient {
     this.logger = options.logger ?? consoleLogger;
     const fetchImpl = options.fetchImpl ?? (globalThis.fetch as FetchImpl | undefined);
     if (!fetchImpl) {
-      throw new Error("ai-observer: global fetch is unavailable (need Node 18+) and no fetchImpl was provided");
+      throw new Error("ai-observer: global fetch is unavailable and no fetchImpl was provided");
     }
     this.fetchImpl = fetchImpl;
     if (options.tracing) {

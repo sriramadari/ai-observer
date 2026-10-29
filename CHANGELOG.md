@@ -3,6 +3,14 @@
 All notable changes to this project are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.0
+
+- **Runs outside Node.** Dropped the `node:crypto` import: cache keys now use a
+  built-in pure-JS SHA-256 that produces byte-identical keys, so existing Redis
+  entries stay valid. The API-key env lookup no longer assumes `process` exists.
+  The client now works in Bun, Deno, edge runtimes and the browser.
+- `prepare` script builds `dist/`, so the package can be installed straight from git.
+
 ## 0.1.0
 
 Initial release.

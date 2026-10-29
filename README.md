@@ -15,7 +15,7 @@ AI adoption is exploding, but every team re-implements the same plumbing around 
 npm install ai-observer
 ```
 
-> Node ≥ 18 (uses the global `fetch`). ESM + CJS, fully typed. **No runtime dependencies** — providers are called over HTTPS, so you don't install (or version-pin) any vendor SDK.
+> Node ≥ 18, Bun, Deno, edge runtimes and browsers: anything with a global `fetch` (or pass `fetchImpl`). ESM + CJS, fully typed. **No runtime dependencies**, and no Node built-ins: providers are called over HTTPS, so you don't install (or version-pin) any vendor SDK.
 
 ---
 

@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { sha256Hex } from "./sha256";
 import type { CacheAdapter, NormalizedRequest, Provider } from "./types";
 
 /** Deterministic cache key for a normalized request. */
@@ -11,7 +11,7 @@ export function cacheKey(provider: Provider, req: NormalizedRequest): string {
     temperature: req.temperature ?? null,
     extra: req.extra ?? null,
   });
-  return "ai-observer:" + createHash("sha256").update(payload).digest("hex");
+  return "ai-observer:" + sha256Hex(payload);
 }
 
 /** In-process LRU-ish cache with TTL. Good for a single instance / tests. */
