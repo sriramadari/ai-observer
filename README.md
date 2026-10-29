@@ -19,6 +19,43 @@ npm install ai-observer
 
 ---
 
+## What it does and how it helps
+
+**The problem.** Every app that calls an LLM ends up writing the same plumbing around the vendor SDK: retrying 429s, caching repeated prompts, working out what each call cost and remembering which prompt version produced an answer. Each vendor has a different SDK and response shape, so adding a second provider or switching models means writing that plumbing again.
+
+**What it does**
+
+- **One client, three providers.** chat() and complete() work the same across Anthropic, OpenAI and Gemini, over plain HTTPS with no vendor SDK. Every call returns one shape: text, usage, costUsd, cached, latencyMs, and the raw body.
+- **Retries.** 429s, 5xx errors and network failures retry with exponential backoff and jitter, and a retry-after header is honoured. Other 4xx errors fail at once, so a bad request doesn't burn retries.
+- **Response cache.** Redis (pass an ioredis client) or in-memory, keyed by a SHA-256 of the normalized request with a configurable TTL. Cache hits cost $0.
+- **Cost tracking.** Per-model prices turn token usage into USD on every call. Override the table for new models or negotiated rates.
+- **Tracing.** Every request is recorded, then rolled up into count, errors, cache hit rate, average latency, tokens and cost by provider and by model. onTrace streams records to your own logs.
+- **Prompt versioning.** Register named templates with {{variables}} and pin a version with name@2, so a change to a prompt is deliberate and traceable.
+
+**How it helps**
+
+| Before | With `ai-observer` |
+|---|---|
+| Switching from OpenAI to Claude means new SDK calls and new response parsing. | Change provider and model; the rest of your code is untouched. |
+| A burst of 429s from the provider turns into 500s for your users. | The client waits as told and retries; users see a slower answer, not an error. |
+| Repeated prompts (FAQs, evals, users pressing retry) are billed every time. | Identical requests come from the cache at zero cost. |
+| "What did we spend on gpt-4o this week?" needs a dashboard export. | getStats().byModel, or your own sink via onTrace. |
+
+**Use it when**
+
+- A backend calls one or more LLM APIs for text completions.
+- You want caching, retries and cost numbers without adopting a framework.
+- Code that must run on Node, Bun, Deno, edge runtimes or in the browser.
+
+**Not the right tool for**
+
+- Streaming responses or tool calling; it covers request/response text chat today.
+- Agent orchestration. It is the HTTP layer underneath, not a framework on top.
+
+**How it works.** Each call runs through a fixed pipeline: normalize the request, look up the cache, call the provider adapter inside the retry loop, price the usage, store the result, record a trace. Adapters are about fifty lines each and only translate between the unified shape and each vendor's wire format. It uses the global fetch (or one you inject) and has no dependencies.
+
+---
+
 ## Quick start
 
 ```ts
